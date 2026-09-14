@@ -1,0 +1,5 @@
+# Ignore everything by default, then explicitly allow only what should be pushed.
+*
+!.gitignore
+!hand_control_robot.py
+!requirements.txt
