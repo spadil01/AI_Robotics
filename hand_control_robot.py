@@ -20,7 +20,7 @@ from mediapipe.tasks.python import vision
 
 import legoeducation as le
 
-# ---- Configuration ----
+# ---- Configuration ----m
 MODEL_PATH = "hand_landmarker.task"
 CAMERA_INDEX = 0
 

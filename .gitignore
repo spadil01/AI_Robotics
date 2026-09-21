@@ -2,4 +2,6 @@
 *
 !.gitignore
 !hand_control_robot.py
+!track_moving_apriltag.py
+!track_stationary_apriltag.py
 !requirements.txt
