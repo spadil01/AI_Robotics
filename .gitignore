@@ -1,6 +1,8 @@
 # Ignore everything by default, then explicitly allow only what should be pushed.
 *
 !.gitignore
-!hand_control_robot.py
-!track_apriltag.py
 !requirements.txt
+!apriltag_centering/
+!apriltag_centering/**
+!hand_control/
+!hand_control/**
