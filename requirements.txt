@@ -20,7 +20,10 @@ pyobjc-core==12.2.2
 pyobjc-framework-Cocoa==12.2.2
 pyobjc-framework-CoreBluetooth==12.2.2
 pyobjc-framework-libdispatch==12.2.2
+pyaudio==0.2.14
 pyparsing==3.3.2
+pytest>=8.0
 python-dateutil==2.9.0.post0
+scipy==1.18.1
 six==1.17.0
 sounddevice==0.5.6

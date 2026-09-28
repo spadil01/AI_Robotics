@@ -4,5 +4,9 @@
 !requirements.txt
 !apriltag_centering/
 !apriltag_centering/**
+apriltag_centering/track_moving_apriltag.py
+apriltag_centering/track_stationary_apriltag.py
 !hand_control/
 !hand_control/**
+!audio/
+!audio/**
