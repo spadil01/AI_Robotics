@@ -10,3 +10,7 @@ apriltag_centering/track_stationary_apriltag.py
 !hand_control/**
 !audio/
 !audio/**
+
+# Re-ignore compiled bytecode caches everywhere, even inside the folders
+# whitelisted above -- machine/version-specific, never worth tracking.
+**/__pycache__/
