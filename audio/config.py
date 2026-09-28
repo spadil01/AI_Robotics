@@ -25,12 +25,17 @@ GOALIE_TOPIC = "ME193/Rogers/ballstopped"
 # Placeholder -- confirm this matches whatever message is actually sent.
 GOALIE_TRIGGER_MESSAGE = "stop"
 
+# What the "ball" role publishes to BALL_TOPIC when it scores (goal
+# whistle) or gets stopped (light sensor).
+BALL_GOAL_MESSAGE = "Goal"
+BALL_STOPPED_MESSAGE = "Ball stopped"
+
 # The goalie also listens on GOALIE_LOSS_TOPIC for GOALIE_LOSS_MESSAGE --
 # the ball scored -- and plays GOALIE_LOSS_SONG_URL instead. Defaults match
-# what this code's own "ball" role publishes on a goal ("Goal!" on
-# BALL_TOPIC); change both to whatever's agreed with the other team.
+# what this code's own "ball" role publishes on a goal; change both to
+# whatever's agreed with the other team.
 GOALIE_LOSS_TOPIC = BALL_TOPIC
-GOALIE_LOSS_MESSAGE = "Goal!"
+GOALIE_LOSS_MESSAGE = BALL_GOAL_MESSAGE
 
 # The Connection Card attached to the Double Motor being driven. Update
 # these to match the card actually on the robot -- see hand_control_robot.py

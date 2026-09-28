@@ -11,11 +11,11 @@ of the role's stop triggers fires and a song plays:
   "ball" role has two distinct triggers, each with its own song and MQTT
   publish, since they mean different things:
     - light sensor detects something close (light_sensor.py) -- the ball
-      got stopped by the goalie -- publishes "Ball stopped" to BALL_TOPIC
+      got stopped by the goalie -- publishes BALL_STOPPED_MESSAGE to BALL_TOPIC
       and opens BALL_STOPPED_SONG_URL.
     - a very high-pitched whistle is confirmed as the "goal" command
       (FREQ_BANDS in config.py) -- the ball went in the net -- publishes
-      "Goal!" to BALL_TOPIC and opens BALL_GOAL_SONG_URL.
+      BALL_GOAL_MESSAGE to BALL_TOPIC and opens BALL_GOAL_SONG_URL.
 
   "goalie" role has two outcomes, both over MQTT:
     - GOALIE_TRIGGER_MESSAGE on GOALIE_TOPIC -- the goalie made the stop
@@ -46,7 +46,9 @@ from mqttlib import MQTTClient  # noqa: E402
 
 import live_plot  # noqa: E402
 from config import (  # noqa: E402
+    BALL_GOAL_MESSAGE,
     BALL_GOAL_SONG_URL,
+    BALL_STOPPED_MESSAGE,
     BALL_STOPPED_SONG_URL,
     BALL_TOPIC,
     GOALIE_LOSS_MESSAGE,
@@ -126,11 +128,11 @@ def run_ball(motor, mqtt_client, started):
         # of the feedback that actually matters (the song, the MQTT message).
         if trigger == "whistle":
             print("Goal whistle triggered -- publishing and playing goal song.")
-            mqtt_client.publish(BALL_TOPIC, "Goal!")
+            mqtt_client.publish(BALL_TOPIC, BALL_GOAL_MESSAGE)
             webbrowser.open(BALL_GOAL_SONG_URL)
         elif trigger == "light_sensor":
             print("Light sensor triggered -- publishing and playing stopped song.")
-            mqtt_client.publish(BALL_TOPIC, "Ball stopped")
+            mqtt_client.publish(BALL_TOPIC, BALL_STOPPED_MESSAGE)
             webbrowser.open(BALL_STOPPED_SONG_URL)
         else:
             print("Ended without a trigger (window closed or Ctrl+C) -- no song played.")

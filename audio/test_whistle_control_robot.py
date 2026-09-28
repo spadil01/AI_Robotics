@@ -97,24 +97,24 @@ def test_subscribe_for_start_ignores_unrelated_messages():
 
 
 def test_goalie_outcome_save():
-    assert goalie_outcome("t/save", " STOP ", "t/save", "stop", "t/ball", "Goal!") == "save"
+    assert goalie_outcome("t/save", " STOP ", "t/save", "stop", "t/ball", "Goal") == "save"
 
 
 def test_goalie_outcome_goal():
-    assert goalie_outcome("t/ball", "goal!", "t/save", "stop", "t/ball", "Goal!") == "goal"
+    assert goalie_outcome("t/ball", "GOAL", "t/save", "stop", "t/ball", "Goal") == "goal"
 
 
 def test_goalie_outcome_needs_matching_topic():
     # Right message on the wrong topic doesn't count.
-    assert goalie_outcome("t/ball", "stop", "t/save", "stop", "t/ball", "Goal!") is None
-    assert goalie_outcome("t/save", "Goal!", "t/save", "stop", "t/ball", "Goal!") is None
+    assert goalie_outcome("t/ball", "stop", "t/save", "stop", "t/ball", "Goal") is None
+    assert goalie_outcome("t/save", "Goal", "t/save", "stop", "t/ball", "Goal") is None
 
 
 def test_goalie_outcome_shared_topic():
     # Both messages on one topic still map to the right outcome.
-    assert goalie_outcome("t", "stop", "t", "stop", "t", "Goal!") == "save"
-    assert goalie_outcome("t", "Goal!", "t", "stop", "t", "Goal!") == "goal"
-    assert goalie_outcome("t", "hello", "t", "stop", "t", "Goal!") is None
+    assert goalie_outcome("t", "stop", "t", "stop", "t", "Goal") == "save"
+    assert goalie_outcome("t", "Goal", "t", "stop", "t", "Goal") == "goal"
+    assert goalie_outcome("t", "hello", "t", "stop", "t", "Goal") is None
 
 
 # ---- run_goalie ----
