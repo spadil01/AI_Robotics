@@ -5,7 +5,7 @@ import queue
 import numpy as np
 import pyaudio
 
-from config import CHANNELS, CHUNK, SAMPLE_RATE
+from config import CHANNELS, CHUNK, INPUT_DEVICE_INDEX, SAMPLE_RATE
 
 FORMAT = pyaudio.paInt16
 
@@ -18,10 +18,17 @@ class AudioStreamer:
     control loop) can drain them at its own pace on the main thread.
     """
 
-    def __init__(self, sample_rate=SAMPLE_RATE, channels=CHANNELS, chunk=CHUNK):
+    def __init__(
+        self,
+        sample_rate=SAMPLE_RATE,
+        channels=CHANNELS,
+        chunk=CHUNK,
+        input_device_index=INPUT_DEVICE_INDEX,
+    ):
         self.sample_rate = sample_rate
         self.channels = channels
         self.chunk = chunk
+        self.input_device_index = input_device_index
         self.chunks = queue.Queue()
         self._pa = None
         self._stream = None
@@ -39,6 +46,7 @@ class AudioStreamer:
             channels=self.channels,
             rate=self.sample_rate,
             input=True,
+            input_device_index=self.input_device_index,
             frames_per_buffer=self.chunk,
             stream_callback=self._on_audio,
         )

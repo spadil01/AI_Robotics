@@ -45,6 +45,13 @@ LIGHT_SENSOR_CARD_SERIAL = "0994"
 # threshold for this sensor/lighting/robot.
 LIGHT_SENSOR_THRESHOLD = 50
 
+# Which PyAudio input device to record from. None uses the system's default
+# input device (usually the built-in mic). To use something else -- a USB
+# mic, an audio interface, a virtual/loopback device -- run
+# list_audio_devices.py to print each available device's index and name,
+# then set this to that device's index.
+INPUT_DEVICE_INDEX = 0
+
 SAMPLE_RATE = 44100
 
 # A chunk's RMS amplitude below this is treated as silence (no whistle),
@@ -78,6 +85,10 @@ MAX_WHISTLE_HZ = 2200.0
 # live_plot.py's "session whistle range seen" readout and adjust these to
 # match if the whistler or mic changes.
 #
+# The lowest and second-lowest bands were swapped to "forward"/"backward"
+# (rather than retuning the pitch ranges themselves) since the lowest one
+# was easier to hit reliably and that's now the more-used "forward".
+#
 # "goal" is not a movement command -- it's a deliberately very high, separate
 # whistle that (for the "ball" role) manually triggers the same
 # stop-and-play-song flow as the light sensor, to celebrate scoring a goal
@@ -87,8 +98,8 @@ MAX_WHISTLE_HZ = 2200.0
 # still a 70 Hz gap above "right" (1230 Hz) so it can't be whistled by
 # accident. Re-verify with live_plot.py that this is comfortably reachable.
 FREQ_BANDS = [
-    (650.0, 784.0, "backward"),
-    (799.0, 933.0, "forward"),
+    (650.0, 784.0, "forward"),
+    (799.0, 933.0, "backward"),
     (948.0, 1100.0, "left"),
     (1115.0, 1230.0, "right"),
     (1300.0, 2000.0, "goal"),

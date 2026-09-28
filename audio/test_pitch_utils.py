@@ -70,7 +70,7 @@ def test_frequency_to_command_band_boundaries(freq, expected):
 
 
 def test_frequency_to_command_uses_config_bands_by_default():
-    assert frequency_to_command(700) == "backward"
+    assert frequency_to_command(700) == "forward"
     assert frequency_to_command(None) == "stop"
 
 
