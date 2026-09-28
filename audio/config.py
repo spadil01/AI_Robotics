@@ -25,6 +25,13 @@ GOALIE_TOPIC = "ME193/Rogers/ballstopped"
 # Placeholder -- confirm this matches whatever message is actually sent.
 GOALIE_TRIGGER_MESSAGE = "stop"
 
+# The goalie also listens on GOALIE_LOSS_TOPIC for GOALIE_LOSS_MESSAGE --
+# the ball scored -- and plays GOALIE_LOSS_SONG_URL instead. Defaults match
+# what this code's own "ball" role publishes on a goal ("Goal!" on
+# BALL_TOPIC); change both to whatever's agreed with the other team.
+GOALIE_LOSS_TOPIC = BALL_TOPIC
+GOALIE_LOSS_MESSAGE = "Goal!"
+
 # The Connection Card attached to the Double Motor being driven. Update
 # these to match the card actually on the robot -- see hand_control_robot.py
 # for how these are used with legoeducation's connect().
@@ -163,3 +170,6 @@ BALL_STOPPED_SONG_URL = "https://www.youtube.com/watch?v=m9zhgDsd4P4&autoplay=1"
 BALL_GOAL_SONG_URL = "https://youtu.be/oAclItu-0-M?t=7s&autoplay=1"
 # Played when the goalie's MQTT trigger fires -- the goalie made the stop.
 GOALIE_SONG_URL = "https://youtu.be/w5tWYmIOWGk?list=RDw5tWYmIOWGk&t=45&autoplay=1"
+# Played when GOALIE_LOSS_MESSAGE arrives -- the ball scored on the goalie.
+# Reuses the ball's stopped (death) song until a different one is picked.
+GOALIE_LOSS_SONG_URL = BALL_STOPPED_SONG_URL

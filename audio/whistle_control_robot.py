@@ -17,8 +17,11 @@ of the role's stop triggers fires and a song plays:
       (FREQ_BANDS in config.py) -- the ball went in the net -- publishes
       "Goal!" to BALL_TOPIC and opens BALL_GOAL_SONG_URL.
 
-  "goalie" role waits on GOALIE_TOPIC for GOALIE_TRIGGER_MESSAGE -- the
-  goalie made the stop -- and opens GOALIE_SONG_URL.
+  "goalie" role has two outcomes, both over MQTT:
+    - GOALIE_TRIGGER_MESSAGE on GOALIE_TOPIC -- the goalie made the stop
+      -- opens GOALIE_SONG_URL.
+    - GOALIE_LOSS_MESSAGE on GOALIE_LOSS_TOPIC -- the ball scored -- opens
+      GOALIE_LOSS_SONG_URL.
 
 Either way: stop the motor, stop listening, end. Run directly:
 
@@ -46,6 +49,9 @@ from config import (  # noqa: E402
     BALL_GOAL_SONG_URL,
     BALL_STOPPED_SONG_URL,
     BALL_TOPIC,
+    GOALIE_LOSS_MESSAGE,
+    GOALIE_LOSS_SONG_URL,
+    GOALIE_LOSS_TOPIC,
     GOALIE_SONG_URL,
     GOALIE_TOPIC,
     GOALIE_TRIGGER_MESSAGE,
@@ -130,30 +136,63 @@ def run_ball(motor, mqtt_client, started):
             print("Ended without a trigger (window closed or Ctrl+C) -- no song played.")
 
 
+def goalie_outcome(
+    topic,
+    payload,
+    save_topic=GOALIE_TOPIC,
+    save_message=GOALIE_TRIGGER_MESSAGE,
+    loss_topic=GOALIE_LOSS_TOPIC,
+    loss_message=GOALIE_LOSS_MESSAGE,
+):
+    """Return "save" if this MQTT message means the goalie made the stop,
+    "goal" if it means the ball scored, or None if it's neither.
+    """
+    if topic == save_topic and _message_matches(payload, save_message):
+        return "save"
+    if topic == loss_topic and _message_matches(payload, loss_message):
+        return "goal"
+    return None
+
+
 def run_goalie(motor, mqtt_client, started):
-    """Drive the motor from whistled commands (once started) until
-    GOALIE_TRIGGER_MESSAGE arrives on GOALIE_TOPIC, then play the song.
+    """Drive the motor from whistled commands (once started) until either
+    GOALIE_TRIGGER_MESSAGE arrives on GOALIE_TOPIC (the goalie made the
+    stop -- success song) or GOALIE_LOSS_MESSAGE arrives on
+    GOALIE_LOSS_TOPIC (the ball scored -- loss song).
     """
     triggered = threading.Event()
+    outcome = None
 
-    def on_message(_topic, payload):
-        if _message_matches(payload, GOALIE_TRIGGER_MESSAGE):
+    def on_message(topic, payload):
+        nonlocal outcome
+        if triggered.is_set():
+            return
+        result = goalie_outcome(topic, payload)
+        if result is not None:
+            outcome = result
             triggered.set()
 
-    mqtt_client.subscribe(GOALIE_TOPIC, on_message)
+    # mqttlib keeps one callback per topic, so subscribe each distinct topic
+    # once -- the save and loss messages may share a topic.
+    for topic in dict.fromkeys([GOALIE_TOPIC, GOALIE_LOSS_TOPIC]):
+        mqtt_client.subscribe(topic, on_message)
 
     def on_chunk(_command, _speed):
         return triggered.is_set()
 
     print(
         f'Whistle to drive the robot once started. Waiting for '
-        f'"{GOALIE_TRIGGER_MESSAGE}" on {GOALIE_TOPIC} to end the run.'
+        f'"{GOALIE_TRIGGER_MESSAGE}" on {GOALIE_TOPIC} (save) or '
+        f'"{GOALIE_LOSS_MESSAGE}" on {GOALIE_LOSS_TOPIC} (goal) to end the run.'
     )
     live_plot.main(motor=motor, on_chunk=on_chunk, gate=started)
 
-    if triggered.is_set():
-        print("Goalie trigger received -- playing song.")
+    if outcome == "save":
+        print("Goalie made the save -- playing success song.")
         webbrowser.open(GOALIE_SONG_URL)
+    elif outcome == "goal":
+        print("Ball scored -- playing loss song.")
+        webbrowser.open(GOALIE_LOSS_SONG_URL)
     else:
         print("Ended without a trigger (window closed or Ctrl+C) -- no song played.")
 
