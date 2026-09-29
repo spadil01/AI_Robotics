@@ -18,7 +18,8 @@ import time
 
 import legoeducation as le
 
-from config import LIGHT_SENSOR_CARD_COLOR, LIGHT_SENSOR_CARD_SERIAL, LIGHT_SENSOR_THRESHOLD
+from ble_search import find_first
+from config import BLE_SCAN_TIMEOUT_S, LIGHT_SENSOR_CARD_COLOR, LIGHT_SENSOR_CARD_SERIAL, LIGHT_SENSOR_THRESHOLD
 
 
 def is_object_close(reflection, threshold=LIGHT_SENSOR_THRESHOLD):
@@ -60,7 +61,20 @@ class LightSensorMonitor:
 
     def start(self):
         self.sensor.set_notification_callback(self._on_notification)
-        self.sensor.connect(card_color=self.card_color, card_serial=self.card_serial)
+        print(
+            f"Scanning for Color Sensor (card serial {self.card_serial}, "
+            f"up to {BLE_SCAN_TIMEOUT_S}s)..."
+        )
+        found = find_first(
+            self.sensor, BLE_SCAN_TIMEOUT_S, card_color=self.card_color, card_serial=self.card_serial
+        )
+        if not found:
+            raise RuntimeError(
+                "No matching Color Sensor found -- check it's powered on, nearby, "
+                "and that LIGHT_SENSOR_CARD_COLOR/LIGHT_SENSOR_CARD_SERIAL in "
+                "config.py match its Connection Card."
+            )
+        self.sensor.connect(device=found)
         if not self.sensor.connected:
             raise RuntimeError("Error connecting to Color Sensor (light sensor).")
 

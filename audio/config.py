@@ -18,12 +18,24 @@ import legoeducation as le
 # (goal whistle); the goalie waits on GOALIE_TOPIC for GOALIE_TRIGGER_MESSAGE.
 START_TOPIC = "ME193/Rogers/"
 BALL_TOPIC = "ME193/Rogers/ballstatus"
-GOALIE_TOPIC = "ME193/Rogers/ballstopped"
+GOALIE_TOPIC = "ME193/Rogers/goalstatus"
 
 # The exact message payload (case-insensitive, whitespace-trimmed) the
 # goalie waits for on GOALIE_TOPIC before stopping and playing its song.
 # Placeholder -- confirm this matches whatever message is actually sent.
 GOALIE_TRIGGER_MESSAGE = "stop"
+
+# What the "ball" role publishes to BALL_TOPIC when it scores (goal
+# whistle) or gets stopped (light sensor).
+BALL_GOAL_MESSAGE = "Goal"
+BALL_STOPPED_MESSAGE = "Ball stopped"
+
+# The goalie also listens on GOALIE_LOSS_TOPIC for GOALIE_LOSS_MESSAGE --
+# the ball scored -- and plays GOALIE_LOSS_SONG_URL instead. Defaults match
+# what this code's own "ball" role publishes on a goal; change both to
+# whatever's agreed with the other team.
+GOALIE_LOSS_TOPIC = BALL_TOPIC
+GOALIE_LOSS_MESSAGE = BALL_GOAL_MESSAGE
 
 # The Connection Card attached to the Double Motor being driven. Update
 # these to match the card actually on the robot -- see hand_control_robot.py
@@ -36,6 +48,12 @@ MOTOR_CARD_SERIAL = "0994"
 # the robot -- placeholder serial below, this hasn't been connected yet.
 LIGHT_SENSOR_CARD_COLOR = le.LEGO_COLOR_RED
 LIGHT_SENSOR_CARD_SERIAL = "0994"
+
+# How long (seconds) to scan over Bluetooth for the motor / light sensor
+# before giving up. Without a limit, legoeducation's connect() scans
+# forever if the hardware is off, out of range, or the card color/serial
+# above don't match -- which looks like the program is stuck loading.
+BLE_SCAN_TIMEOUT_S = 15
 
 # Reflected light intensity (0-100) at or above which something is
 # considered close enough to trigger a stop -- reflection rises as an
@@ -160,6 +178,9 @@ TURN_SPEED = 30.0
 BALL_STOPPED_SONG_URL = "https://www.youtube.com/watch?v=m9zhgDsd4P4&autoplay=1"
 # Played when the ball's high "goal" whistle is confirmed -- the ball went
 # in the net.
-BALL_GOAL_SONG_URL = "https://youtu.be/oAclItu-0-M?t=7s&autoplay=1"
+BALL_GOAL_SONG_URL = "https://www.youtube.com/watch?v=TGtWWb9emYI&list=RDTGtWWb9emYI&start_radio=1&autoplay=1"
 # Played when the goalie's MQTT trigger fires -- the goalie made the stop.
 GOALIE_SONG_URL = "https://youtu.be/w5tWYmIOWGk?list=RDw5tWYmIOWGk&t=45&autoplay=1"
+# Played when GOALIE_LOSS_MESSAGE arrives -- the ball scored on the goalie.
+# Reuses the ball's stopped (death) song until a different one is picked.
+GOALIE_LOSS_SONG_URL = BALL_STOPPED_SONG_URL
