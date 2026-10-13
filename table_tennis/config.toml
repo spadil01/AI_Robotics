@@ -1,0 +1,125 @@
+# All tunable numbers for the table tennis game live here.
+
+[paddle]
+card_color = "ORANGE"          # name of a le.LEGO_COLOR_* constant
+card_serial = "7589"
+# Milliseconds between IMU updates from the motor. The library default is 100
+# (10 Hz), far too slow for swings. 15 is the fastest it allows (~66 Hz).
+notification_delay_ms = 15
+
+# Day-1 measurements (2026-10-08, motor loose in hand):
+#   IMU rate ~64 Hz; updates arrive in bursts, worst gap ~60 ms
+#   gyro reads exactly 0 when still; hard shaking peaks ~1100-1660 per axis
+#   beep with blocking=True waits ~1 s for the sound to finish -> always use blocking=False
+#   light_color with blocking=True takes ~57 ms
+
+[mqtt]
+local_broker = "localhost"     # Mosquitto on this Mac, for sensor data
+
+[vision]
+camera_index = 0
+width = 1280
+height = 720
+tag_ids = [7]                  # paddle tag(s); add a second ID for the other face later
+pose_model = "models/pose_landmarker_lite.task"
+toss_margin = 0.05             # free wrist must be this far above its shoulder (fraction of image height)
+toss_frames = 2                # ...for this many frames in a row
+toss_cooldown_ms = 1000
+min_visibility = 0.5           # ignore landmarks MediaPipe isn't confident about
+preview_width = 384            # size of the camera picture sent to the game
+preview_fps = 12
+shirt_every_s = 0.5            # how often to measure the player's shirt color
+shirt_clusters = 3             # k-means groups: shirt + background/arms/paddle
+
+[swing]
+# Swings are detected on ONE gyro axis: the one a swing spins around.
+# Day-1 test (motor loose in hand): every real swing peaked on y (|gy| >= 616),
+# wiggles never got |gy| above 555, so total magnitude can't separate them but y can.
+# Checked with the motor mounted on the paddle: y is still the main swing axis.
+swing_axis = "y"               # "x", "y" or "z"
+start_threshold = 320          # a swing starts when |gyro on swing_axis| goes above this (mounted paddle: gentle ~350-550)
+end_threshold = 180            # ...and ends when it drops below this
+min_duration_ms = 30           # ignore blips shorter than this from start to peak (bumps)
+peak_drop = 0.8                # report the swing once the spin rate falls below 80% of its peak
+cooldown_ms = 150              # short rest after each swing ends
+recovery_ms = 450              # ignore a swing the other way this soon after one (bringing the paddle back)...
+windup_ratio = 1.3             # ...unless it's this many times stronger: then the first one was a wind-up
+beep_min_hz = 500              # beep pitch for the softest swing...
+beep_max_hz = 1500             # ...and the hardest
+hard_swing_rate = 850          # spin rate that counts as a full-power swing (mounted paddle hard: forehand ~620-770, backhand ~850-1000)
+# Paddle tilt -> high/low shots (tilt measured from straight up and down):
+tilt_deadzone_deg = 10         # less tilt than this = a normal shot
+tilt_full_deg = 65             # this much tilt = fully open/closed; past ~55 deg the shot goes long / into the net
+
+[game]
+handedness = "right"           # "right" or "left"; the calibration screen sets this
+calibrate = true               # show the calibration screen at startup
+dog_names = ["Biscuit", "Rex", "Pepper", "Buddy", "Max"]     # the Pro opponent is a dog
+opponent_names = ["Jerry", "Sam", "Cole", "Maya", "Nina", "Theo"]   # one is picked for each match
+difficulty = "intermediate"    # "beginner", "intermediate" or "pro" (menu will set this later)
+match_points = 11              # 6 or 11, like Wii Sports Resort
+serves_per_turn = 2
+player_hit_plane = -1.57       # z where the player meets the ball (table end is -1.37)
+cpu_hit_plane = 1.57
+grace_ms = 80                  # how long to wait for a late swing message before calling a miss
+attempt_lead_ms = 600          # swings earlier than this before contact are ignored; after it, your
+                               # first swing is your one attempt (too early = whiff)
+
+[audio]
+volume = 0.9                   # master volume (0..1)
+effects = 1.0                  # ball, paddle and menu sounds
+crowd = 1.0                    # cheers, awws and claps after points
+
+[pointer]
+# Part of the camera picture (0..1, mirrored) that maps to the whole screen.
+# Smaller ranges = less arm movement needed to reach the screen edges.
+x_range = [0.25, 0.75]
+y_range = [0.2, 0.7]
+min_cutoff = 1.0               # smoothing when still (lower = steadier cursor)
+beta = 0.05                    # smoothing when moving fast (higher = less lag)
+dwell_s = 1.5                  # hover this long on a button to select it
+glide_s = 0.08                 # cursor slides toward the tag (higher = smoother but laggier)
+
+[result]
+player_name = "Sergio"         # topic becomes ME193/Rogers/<player_name>
+broker = "test.mosquitto.org"
+topic_prefix = "ME193/Rogers/"
+
+[shots]
+flight_time_soft = 0.75        # seconds for a gentle return to land
+flight_time_hard = 0.3         # ...and for a full-power one
+aim_width = 0.7                # how far across the table timing can steer (fraction of half-width)
+wide_timing = 0.9              # timing beyond this fraction of the window goes out wide
+face_safe = 0.75               # paddle face beyond this goes long (open) or into the net (closed)
+smash_height = 0.45            # a hard swing at a ball this high above the table is a smash...
+smash_factor = 0.75            # ...which flies this much quicker
+serve_first_time = 0.32
+serve_time_soft = 0.62
+serve_time_hard = 0.45
+
+[difficulty.beginner]
+timing_window_ms = 200         # +/- how early or late a swing can be and still hit
+return_time = [0.62, 0.74]      # CPU shot flight time range (s): bigger = slower
+target_spread = 0.3            # how far toward the sidelines the CPU aims (0..1)
+depth = [0.6, 0.95]            # how deep on your half the CPU aims (m from the net)
+miss_chance = 0.15             # CPU misses an easy ball...
+hard_shot_miss = 0.35          # ...plus this much more against a full-power shot
+smash_chance = 0.0
+
+[difficulty.intermediate]
+timing_window_ms = 150
+return_time = [0.58, 0.7]
+target_spread = 0.6
+depth = [0.6, 1.15]
+miss_chance = 0.07
+hard_shot_miss = 0.25
+smash_chance = 0.3
+
+[difficulty.pro]
+timing_window_ms = 110
+return_time = [0.46, 0.56]
+target_spread = 0.85
+depth = [0.8, 1.25]
+miss_chance = 0.03
+hard_shot_miss = 0.15
+smash_chance = 0.7
