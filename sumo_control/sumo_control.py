@@ -4,7 +4,7 @@ Talks to the LEGO Double Motor, Color Sensor and Controller over Bluetooth
 and to the UNO Q over MQTT. It does no deciding itself:
 
   Color Sensor + Controller -> "sumo/lego"  -> UNO Q (behavior tree)
-  UNO Q -> "sumo/drive" {left, right} -> Double Motor
+  UNO Q -> "sumo/drive" {left, right, ramp} -> Double Motor + Single Motor (ramp)
 
 One reflex lives here instead of on the UNO Q: the instant the light sensor
 sees blue, the laptop brakes, without waiting the ~40 ms for the UNO Q to
@@ -13,6 +13,9 @@ as soon as it arrives. If the UNO Q goes quiet, the motors stop.
 
     python sumo_control/sumo_control.py           # run the robot
     python sumo_control/sumo_control.py --watch   # just print sensor + controller readings
+    python sumo_control/sumo_control.py --ramp    # raise the ramp, wait 2 s, lower it (tuning)
+
+Start it with the ramp DOWN: that position is remembered as "down".
 
 Ctrl+C to stop.
 """
@@ -35,7 +38,7 @@ import lose_song  # noqa: E402
 from config import (  # noqa: E402
     BLE_SCAN_TIMEOUT_S, BROKER, CARD_COLOR, CARD_SERIAL, DRIVE_STALE_S, DRIVE_TOPIC,
     EDGE_COLORS, EDGE_HUE, EDGE_MIN_SAT, REFLEX_MAX_S,
-    INVERT_LEFT, INVERT_RIGHT, LEGO_TOPIC, PART_STALE_S, PORT, SEND_HZ, SENSOR_NOTIFY_MS, STATUS_TOPIC,
+    INVERT_LEFT, INVERT_RIGHT, LEGO_TOPIC, PART_STALE_S, PORT, RAMP_SPEED, RAMP_UP_DEG, SEND_HZ, SENSOR_NOTIFY_MS, STATUS_TOPIC,
 )
 
 HERE = os.path.dirname(os.path.abspath(__file__))
@@ -142,8 +145,36 @@ def wheels_to_apply(drive, reflex_active):
     return drive["left"], drive["right"]
 
 
+def connect_ramp():
+    """Connect the ramp's Single Motor and remember where it is now as 'down'."""
+    ramp = connect(le.SingleMotor(), "Single Motor (ramp)")
+    ramp.motor_reset_relative_position(position=0)
+    # Actively hold the target position instead of coasting, so the ramp gets
+    # all the way back down (and stays there while driving).
+    ramp.motor_set_end_state(le.MOTOR_END_STATE_HOLD)
+    return ramp
+
+
+def set_ramp(ramp, up, blocking=False):
+    ramp.motor_run_to_relative_position(RAMP_UP_DEG if up else 0, speed=RAMP_SPEED, blocking=blocking)
+
+
 def main():
     watch = "--watch" in sys.argv
+    if "--ramp" in sys.argv:
+        ramp = connect_ramp()
+        try:
+            print(f"Ramp up ({RAMP_UP_DEG} degrees) ...")
+            set_ramp(ramp, True, blocking=True)
+            time.sleep(2)
+            print(f"  now at {ramp.motor.position} degrees (target {RAMP_UP_DEG})")
+            print("Ramp down ...")
+            set_ramp(ramp, False, blocking=True)
+            time.sleep(1)
+            print(f"  now at {ramp.motor.position} degrees (target 0)")
+        finally:
+            ramp.disconnect()
+        return
     broker = start_broker()
     devices = []
     try:
@@ -160,8 +191,10 @@ def main():
 
         motor = connect(le.DoubleMotor(), "Double Motor")
         devices.append(motor)
+        ramp = connect_ramp()
+        devices.append(ramp)
 
-        drive = {"left": 0, "right": 0, "behavior": "", "time": -1e9}
+        drive = {"left": 0, "right": 0, "behavior": "", "ramp": "down", "time": -1e9}
 
         def on_drive(topic, payload):
             try:
@@ -169,7 +202,8 @@ def main():
             except ValueError:
                 return
             drive.update(left=int(cmd.get("left", 0)), right=int(cmd.get("right", 0)),
-                         behavior=str(cmd.get("behavior", "")), time=time.monotonic())
+                         behavior=str(cmd.get("behavior", "")), ramp=cmd.get("ramp", "down"),
+                         time=time.monotonic())
             wake.set()
 
         def on_status(topic, payload):
@@ -185,6 +219,7 @@ def main():
             client.no_delay()
             print("Running. Waiting for the UNO Q ... (Ctrl+C to stop)")
             applied = None
+            ramp_applied = False  # starts down
             sent, sent_time = None, 0.0
             reflex_until = -1e9
             while True:
@@ -202,8 +237,13 @@ def main():
                 if drive["behavior"].startswith("escape"):
                     reflex_until = -1e9  # the UNO Q has taken over
                 left, right = wheels_to_apply(drive, now < reflex_until)
+                ramp_up = drive["ramp"] == "up"
                 if time.monotonic() - drive["time"] > DRIVE_STALE_S:
                     left = right = 0  # UNO Q silent -> stop
+                    ramp_up = False
+                if ramp_up != ramp_applied:
+                    set_ramp(ramp, ramp_up)
+                    ramp_applied = ramp_up
                 if INVERT_LEFT:
                     left = -left
                 if INVERT_RIGHT:
@@ -221,6 +261,9 @@ def main():
             if d.connected:
                 if isinstance(d, le.DoubleMotor):
                     d.movement_stop()
+                elif isinstance(d, le.SingleMotor):
+                    print("Lowering the ramp ...")
+                    set_ramp(d, False, blocking=True)  # so next start's "down" is right
                 print("Disconnecting (may take a few seconds) ...")
                 d.disconnect()
         if broker:

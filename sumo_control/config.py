@@ -31,6 +31,12 @@ EDGE_HUE = (170, 250)         # blue-ish hues ...
 EDGE_MIN_SAT = 8              # ... that aren't basically grey/white
 REFLEX_MAX_S = 0.3
 
+# Ramp (Single Motor). Its position when sumo_control.py starts counts as
+# "down"; "up" turns it RAMP_UP_DEG from there (negative = the other way).
+# Tune with: python sumo_control/sumo_control.py --ramp
+RAMP_UP_DEG = 100
+RAMP_SPEED = 50               # % speed when moving the ramp
+
 # Played when the UNO Q says the robot went out of the ring. None = the
 # built-in "sad trombone"; or a path to your own .mp3/.wav (macOS).
 LOSE_SONG_FILE = None
