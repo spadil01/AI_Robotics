@@ -3,6 +3,7 @@ Small wrapper around paho-mqtt for publishing and subscribing to an MQTT
 broker (defaults to the public test.mosquitto.org broker).
 """
 
+import socket
 import threading
 
 import paho.mqtt.client as mqtt
@@ -33,6 +34,13 @@ class MQTTClient:
         self._client.loop_stop()
         self._client.disconnect()
         self._connected.clear()
+
+    def no_delay(self):
+        """Send each message right away instead of letting the network bundle
+        small ones together (which can add ~40 ms). Call after connect()."""
+        sock = self._client.socket()
+        if sock:
+            sock.setsockopt(socket.IPPROTO_TCP, socket.TCP_NODELAY, 1)
 
     def publish(self, topic, message, qos=0, retain=False):
         self._client.publish(topic, message, qos=qos, retain=retain)

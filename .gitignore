@@ -14,6 +14,8 @@ apriltag_centering/track_stationary_apriltag.py
 !table_tennis/
 !table_tennis/**
 table_tennis/results.log
+!sumo_control/
+!sumo_control/**
 
 # Re-ignore compiled bytecode caches everywhere, even inside the folders
 # whitelisted above -- machine/version-specific, never worth tracking.
