@@ -4,7 +4,7 @@ Talks to the LEGO Double Motor, Color Sensor and Controller over Bluetooth
 and to the UNO Q over MQTT. It does no deciding itself:
 
   Color Sensor + Controller -> "sumo/lego"  -> UNO Q (behavior tree)
-  UNO Q -> "sumo/drive" {left, right, ramp} -> Double Motor + Single Motor (ramp)
+  UNO Q -> "sumo/drive" {left, right, ramp} -> Double Motor (+ Single Motor ramp with --ramp)
 
 One reflex lives here instead of on the UNO Q: the instant the light sensor
 sees blue, the laptop brakes, without waiting the ~40 ms for the UNO Q to
@@ -13,9 +13,10 @@ as soon as it arrives. If the UNO Q goes quiet, the motors stop.
 
     python sumo_control/sumo_control.py           # run the robot
     python sumo_control/sumo_control.py --watch   # just print sensor + controller readings
-    python sumo_control/sumo_control.py --ramp    # raise the ramp, wait 2 s, lower it (tuning)
+    python sumo_control/sumo_control.py --ramp    # run the robot WITH the lifting ramp
+    python sumo_control/sumo_control.py --ramp-test   # raise the ramp, wait 2 s, lower it (tuning)
 
-Start it with the ramp DOWN: that position is remembered as "down".
+With --ramp, start with the ramp DOWN: that position is remembered as "down".
 
 Ctrl+C to stop.
 """
@@ -161,7 +162,8 @@ def set_ramp(ramp, up, blocking=False):
 
 def main():
     watch = "--watch" in sys.argv
-    if "--ramp" in sys.argv:
+    use_ramp = "--ramp" in sys.argv
+    if "--ramp-test" in sys.argv:
         ramp = connect_ramp()
         try:
             print(f"Ramp up ({RAMP_UP_DEG} degrees) ...")
@@ -191,8 +193,12 @@ def main():
 
         motor = connect(le.DoubleMotor(), "Double Motor")
         devices.append(motor)
-        ramp = connect_ramp()
-        devices.append(ramp)
+        ramp = None
+        if use_ramp:
+            ramp = connect_ramp()
+            devices.append(ramp)
+        else:
+            print("(No ramp -- add --ramp to use the lifting ramp.)")
 
         drive = {"left": 0, "right": 0, "behavior": "", "ramp": "down", "time": -1e9}
 
@@ -241,7 +247,7 @@ def main():
                 if time.monotonic() - drive["time"] > DRIVE_STALE_S:
                     left = right = 0  # UNO Q silent -> stop
                     ramp_up = False
-                if ramp_up != ramp_applied:
+                if ramp and ramp_up != ramp_applied:
                     set_ramp(ramp, ramp_up)
                     ramp_applied = ramp_up
                 if INVERT_LEFT:
