@@ -1,0 +1,157 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Gait Identifier</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header>
+    <h1>Gait Identifier</h1>
+    <nav class="tabs" id="tabs">
+      <button data-tab="training">Training</button><button data-tab="live">Live</button>
+    </nav>
+    <div class="connection">
+      <span id="dot" class="dot"></span>
+      <span id="conn-text">Not connected</span>
+      <label>Board <input id="board" spellcheck="false"></label>
+      <button id="connect">Connect</button>
+    </div>
+    <div class="seg" id="spot">
+      <span>Sensor on</span>
+      <button data-v="ankle">Ankle</button><button data-v="waist">Waist</button>
+    </div>
+    <div class="meters">
+      <div><span id="rate">–</span><small>readings/s</small></div>
+      <div><span id="ping">–</span><small>round trip (ms)</small></div>
+    </div>
+  </header>
+
+  <!-- ================= Training tab ================= -->
+  <main id="tab-training" class="tab">
+    <section class="card wide record">
+      <h2>1 · Record examples</h2>
+      <div class="controls">
+        <div class="seg" id="activity">
+          <button data-v="stand">Stand</button><button data-v="walk">Walk</button><button data-v="run">Run</button><button data-v="bike">Bike</button>
+        </div>
+        <label>Length
+          <select id="seconds">
+            <option>30</option><option selected>60</option><option>120</option><option>180</option>
+          </select> s
+        </label>
+        <label>Person <input id="person" spellcheck="false"></label>
+        <label>Note <input id="note" placeholder="e.g. fast, left leg" spellcheck="false"></label>
+        <button id="record" class="primary">Record</button>
+      </div>
+      <div id="rec-status" class="rec-status">Pick an activity and press Record. You get 10 seconds to get going.</div>
+
+      <div class="data">
+        <table id="totals"></table>
+        <div class="list"><table id="recordings"></table></div>
+      </div>
+    </section>
+
+    <section class="card">
+      <h2>Acceleration <small>(g — 1 g is gravity)</small></h2>
+      <div class="legend"><i class="x"></i>X <i class="y"></i>Y <i class="z"></i>Z</div>
+      <canvas id="accel"></canvas>
+    </section>
+    <section class="card">
+      <h2>Turning speed <small>(degrees per second)</small></h2>
+      <div class="legend"><i class="x"></i>X <i class="y"></i>Y <i class="z"></i>Z</div>
+      <canvas id="gyro"></canvas>
+    </section>
+
+    <section class="card wide models">
+      <div class="live-head">
+        <h2>2 · Train models</h2>
+        <button id="train" class="primary">Train</button>
+        <span id="train-note" class="muted"></span>
+      </div>
+      <p class="muted">Scores are a fair test: each model is graded on a leg/side (or person) it never trained on.
+        Click a row to see what it mixes up.</p>
+      <div class="data">
+        <table id="scores"></table>
+        <div>
+          <h3 id="mix-title">Mix-ups</h3>
+          <table id="mixups"></table>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- ================= Live tab ================= -->
+  <main id="tab-live" class="tab">
+    <section class="card wide live">
+      <div class="live-head">
+        <button id="run" class="primary">Run</button>
+        <div class="seg" id="led-pick">
+          <span>Model</span>
+          <button data-v="peak-tree">Model 1 · tree</button><button data-v="peak-knn">Model 1 · KNN</button><button data-v="all-tree">Model 2 · forest</button><button data-v="all-knn">Model 2 · KNN</button>
+        </div>
+        <span id="live-note" class="muted"></span>
+      </div>
+      <div class="other-settings muted">
+        Say <b>Other</b> when the top answer has under
+        <input type="range" id="agree" min="34" max="95" step="1"> <b id="agree-val">–</b> of the vote,
+        or the movement is over
+        <input type="range" id="far" min="0.5" max="3" step="0.1"> <b id="far-val">–</b> farther than usual from anything it learned (3× that if it’s at least 80% sure).
+      </div>
+      <div class="seg led-show" id="led-show">
+        <span>Show on LED</span>
+        <button data-v="stand">Stand</button><button data-v="walk">Walk</button><button data-v="run">Run</button><button data-v="bike">Bike</button><button data-v="idle">GAIT</button><button data-v="other">?</button>
+      </div>
+      <div class="live-grid">
+        <div class="now">
+          <canvas id="figure"></canvas>
+          <div id="now-label" class="now-label">–</div>
+          <div class="muted">by <span id="led-name">–</span> · also on the LED panel</div>
+        </div>
+        <div>
+          <h3>What each model thinks</h3>
+          <div id="guesses" class="guesses"><p class="muted">Press Run to start guessing.</p></div>
+          <div class="share-legend" id="share-legend"></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="card wide">
+      <button id="why-toggle" class="toggle">Why?</button>
+      <div id="why" class="why" hidden>
+        <div>
+          <h3>Model 1 <small>— one number: the biggest shove along one direction. The colored zones are its rules.</small></h3>
+          <div id="fam-peak"></div>
+          <div id="why-peak"></div>
+        </div>
+        <div>
+          <h3>Model 2 <small>— its most useful clues. Ticks show each activity's typical value.</small></h3>
+          <div id="fam-all"></div>
+          <div id="why-all"></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="card wide">
+      <button id="data-toggle" class="toggle">Live Data</button>
+      <div id="live-data" class="why" hidden>
+        <div>
+          <h3>Acceleration <small>(g — 1 g is gravity)</small></h3>
+          <div class="legend"><i class="x"></i>X <i class="y"></i>Y <i class="z"></i>Z</div>
+          <canvas id="accel-live"></canvas>
+        </div>
+        <div>
+          <h3>Turning speed <small>(degrees per second)</small></h3>
+          <div class="legend"><i class="x"></i>X <i class="y"></i>Y <i class="z"></i>Z</div>
+          <canvas id="gyro-live"></canvas>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <script src="app.js"></script>
+  <script src="figure.js"></script>
+  <script src="live.js"></script>
+</body>
+</html>
