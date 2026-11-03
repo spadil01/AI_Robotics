@@ -1,0 +1,77 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Step Counter</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header>
+    <h1>Step Counter</h1>
+    <div class="connection">
+      <span id="dot" class="dot"></span>
+      <span id="conn-text">Not connected</span>
+      <label>Board <input id="board" spellcheck="false"></label>
+      <button id="connect">Connect</button>
+    </div>
+    <div class="meters">
+      <div><span id="dist">–</span><small>distance (cm)</small></div>
+      <div><span id="rate">–</span><small>readings/s</small></div>
+      <div><span id="ping">–</span><small>round trip (ms)</small></div>
+    </div>
+  </header>
+
+  <main>
+    <section class="card wide record">
+      <h2>Record a trial</h2>
+      <div class="controls">
+        <div class="seg" id="activity">
+          <button data-v="walk">Walk</button><button data-v="slow">Slow walk</button><button data-v="run">Run</button><button data-v="stairs">Stairs</button><button data-v="turns">Turns &amp; shuffles</button><button data-v="fake">No steps</button>
+        </div>
+      </div>
+      <div class="controls">
+        <div class="seg" id="leg"><span>Sensor on</span><button data-v="left">Left ankle</button><button data-v="right">Right ankle</button></div>
+        <label>Person <input id="person" spellcheck="false"></label>
+        <label>Height <input id="height" type="number" min="50" max="250" placeholder="cm"></label>
+        <label>Course <input id="course" type="number" min="0.5" step="0.5"> m</label>
+        <label>Note <input id="note" placeholder="e.g. sneakers, carpet" spellcheck="false"></label>
+        <button id="record" class="primary">Record</button>
+        <button id="cancel" hidden>Cancel</button>
+      </div>
+      <p class="muted how" id="how"></p>
+      <div id="rec-status" class="rec-status">Press Record.</div>
+      <form id="ask-steps" class="ask" hidden>
+        <label>Steps you counted <input id="steps-input" type="number" min="0" step="1" required></label>
+        <label>Lengths walked <input id="lengths-input" type="number" min="0" step="0.5" placeholder="none"></label>
+        <span id="meters-out" class="muted">— leave lengths empty if the distance wasn’t measured</span>
+        <button class="primary">Save</button>
+      </form>
+
+      <div class="data">
+        <table id="totals"></table>
+        <div class="list"><table id="recordings"></table></div>
+      </div>
+    </section>
+
+    <section class="card">
+      <h2>Acceleration <small>(g — 1 g is gravity)</small></h2>
+      <div class="legend"><i class="x"></i>X <i class="y"></i>Y <i class="z"></i>Z</div>
+      <canvas id="accel"></canvas>
+    </section>
+    <section class="card">
+      <h2>Turning speed <small>(degrees per second)</small></h2>
+      <div class="legend"><i class="x"></i>X <i class="y"></i>Y <i class="z"></i>Z</div>
+      <canvas id="gyro"></canvas>
+    </section>
+    <section class="card">
+      <h2>Ultrasonic distance <small>(cm — gaps mean no echo)</small></h2>
+      <div class="legend"><i class="d"></i>Distance</div>
+      <canvas id="distance"></canvas>
+    </section>
+
+  </main>
+
+  <script src="app.js"></script>
+</body>
+</html>

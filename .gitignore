@@ -18,6 +18,10 @@ table_tennis/results.log
 !sumo_control/**
 !gait_identifier/
 !gait_identifier/**
+!step_counter/
+!step_counter/**
+# camera pictures are big: keep them on the laptop only
+step_counter/data/video/
 
 # Re-ignore compiled bytecode caches everywhere, even inside the folders
 # whitelisted above -- machine/version-specific, never worth tracking.
