@@ -20,8 +20,11 @@ table_tennis/results.log
 !gait_identifier/**
 !step_counter/
 !step_counter/**
+!impenetrable_safe/
+!impenetrable_safe/**
 # camera pictures are big: keep them on the laptop only
 step_counter/data/video/
+impenetrable_safe/safe_lock/data/
 
 # Re-ignore compiled bytecode caches everywhere, even inside the folders
 # whitelisted above -- machine/version-specific, never worth tracking.
