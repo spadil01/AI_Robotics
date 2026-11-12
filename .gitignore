@@ -25,6 +25,15 @@ table_tennis/results.log
 # camera pictures are big: keep them on the laptop only
 step_counter/data/video/
 impenetrable_safe/safe_lock/data/
+impenetrable_safe/safe_lock/removed/
+# the vault picture is from the films: keep it on the laptop only
+impenetrable_safe/safe_lock/assets/vault.jpg
+# the explainer video is big; make_video.py can always re-make it
+impenetrable_safe/safe_lock/explainer/*.mp4
+# made by the scripts (train.py, check_numpy_net.py), not hand-written
+impenetrable_safe/safe_lock/mistakes.jpg
+impenetrable_safe/safe_lock/model.npz
+impenetrable_safe/**/.DS_Store
 
 # Re-ignore compiled bytecode caches everywhere, even inside the folders
 # whitelisted above -- machine/version-specific, never worth tracking.

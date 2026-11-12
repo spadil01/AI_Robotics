@@ -1,8 +1,8 @@
 """Collect labeled hand pictures for the finger-counting safe.
 
-Put your hand inside the green box and press a key:
+Show your hand to the camera and press a key:
     0-5   record a burst of pictures of that many fingers
-    n     record a burst of "no hand" pictures (empty box, random stuff)
+    n     record a burst of "no hand" pictures (no hand in view, random stuff)
     space stop a burst early
     u     undo (delete) the last burst
     q     quit
@@ -25,17 +25,8 @@ import cv2
 LABELS = ["0", "1", "2", "3", "4", "5", "none"]
 BURST_SIZE = 40          # pictures per key press
 BURST_GAP_S = 0.12       # time between pictures in a burst (~8 per second)
-SAVE_SIZE = 128          # saved pictures are 128x128; training shrinks them further
-BOX_FRACTION = 0.6       # box side = 60% of the camera picture's height
+SAVE_WIDTH = 256         # the whole camera picture is shrunk to 256 wide, keeping its shape
 DATA_DIR = Path(__file__).parent / "data"
-
-
-def box_corners(frame):
-    """Square box in the middle of the picture: (x1, y1, x2, y2)."""
-    h, w = frame.shape[:2]
-    side = int(h * BOX_FRACTION)
-    x1, y1 = (w - side) // 2, (h - side) // 2
-    return x1, y1, x1 + side, y1 + side
 
 
 def count_pictures(folder):
@@ -70,13 +61,13 @@ def main():
             time.sleep(0.5)
             continue
         frame = cv2.flip(frame, 1)  # mirror, so moving right looks like moving right
-        x1, y1, x2, y2 = box_corners(frame)
 
         # --- take a picture if a burst is running ---
         if burst_label is not None and time.time() >= next_shot:
-            crop = cv2.resize(frame[y1:y2, x1:x2], (SAVE_SIZE, SAVE_SIZE), interpolation=cv2.INTER_AREA)
+            h, w = frame.shape[:2]
+            small = cv2.resize(frame, (SAVE_WIDTH, round(SAVE_WIDTH * h / w)), interpolation=cv2.INTER_AREA)
             path = person_dir / burst_label / f"{time.time():.3f}.jpg"
-            cv2.imwrite(str(path), crop, [cv2.IMWRITE_JPEG_QUALITY, 95])
+            cv2.imwrite(str(path), small, [cv2.IMWRITE_JPEG_QUALITY, 95])
             burst_files.append(path)
             counts[burst_label] += 1
             next_shot = time.time() + BURST_GAP_S
@@ -88,7 +79,7 @@ def main():
         view = frame.copy()
         recording = burst_label is not None
         color = (0, 0, 255) if recording else (0, 200, 0)  # red while recording, green otherwise
-        cv2.rectangle(view, (x1, y1), (x2, y2), color, 3)
+        cv2.rectangle(view, (0, 0), (view.shape[1] - 1, view.shape[0] - 1), color, 6)  # border
         if recording:
             message = f"RECORDING '{burst_label}'  {len(burst_files)}/{BURST_SIZE}  - move your hand around!"
         cv2.putText(view, message, (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 0.7, color, 2)
