@@ -91,7 +91,7 @@ def gather():
     d["first"], d["maps"], d["pooled"], d["chances"] = first, maps, pooled, chances
     # the pattern finder we show: #8 finds edges (outlines of fingers and of the board)
     d["finder"] = FINDER
-    # the 4x3 dots we zoom into in scene 3: where colors change most (edge of a finger)
+    # the 4x3 pixels we zoom into in scene 3: where colors change most (edge of a finger)
     sm = d["small"].astype(np.float32)
     best, d["patch"] = -1, (70, 30)
     for y in range(10, 60, 2):
@@ -215,7 +215,7 @@ def s_camera(pg, p, d):
 
 
 def s_shrink(pg, p, d):
-    pg.title("2. Shrink it to 128 x 72 dots", p)
+    pg.title("2. Shrink it to 128 x 72 pixels", p)
     k = ease(p / 0.4)
     if p < 0.55:
         pg.card(to_pil(d["photo"]), lerp(W // 2, 300, k), 400, lerp(720, 256, k), "photo", angle=-2)
@@ -235,9 +235,9 @@ def s_shrink(pg, p, d):
 
 
 def s_numbers(pg, p, d):
-    pg.title("3. Every dot is just 3 numbers", p)
+    pg.title("3. Every pixel is just 3 numbers", p)
     big = cv2.resize(d["small"], (640, 360), interpolation=cv2.INTER_NEAREST)
-    gx, gy = d["patch"]                  # which dots we zoom into (column, row in 128x72)
+    gx, gy = d["patch"]                  # which pixels we zoom into (column, row in 128x72)
     cv2.rectangle(big, (gx * 5 - 4, gy * 5 - 4), ((gx + 4) * 5 + 4, (gy + 3) * 5 + 4), (40, 50, 220), 3)
     pg.card(to_pil(big), 340, 400, 560, "big", angle=-1.5)
     k = ease((p - 0.2) / 0.3)
@@ -259,18 +259,18 @@ def s_numbers(pg, p, d):
 
 
 def s_finder(pg, p, d):
-    pg.title("4. A pattern finder slides over the picture", p)
-    big = cv2.resize(d["small"], (512, 288), interpolation=cv2.INTER_NEAREST)   # 4 px per dot
-    # the window steps across in jumps (every 8 dots), row by row
+    pg.title("4. A kernel slides over the picture", p)
+    big = cv2.resize(d["small"], (512, 288), interpolation=cv2.INTER_NEAREST)   # 4 screen px per pixel
+    # the window steps across in jumps (every 8 pixels), row by row
     steps = [(x, y) for y in range(0, 72, 8) for x in range(0, 128, 8)]
     i = min(len(steps) - 1, int(len(steps) * p / 0.9))
     sx, sy = steps[i]
     cv2.rectangle(big, (sx * 4 - 8, sy * 4 - 8), (sx * 4 + 20, sy * 4 + 20), (40, 50, 220), 4)
     pg.card(to_pil(big), 320, 360, 512, "big", angle=-1)
-    # the finder itself: 3x3 numbers it multiplies the dots by
+    # the finder itself: 3x3 numbers it multiplies the pixels by
     w = d["finder_w"]
     m = np.abs(w).max() + 1e-6
-    pg.text("the finder (3x3)", 320, 545, 28, INK, key="ft", anchor="mm")
+    pg.text("the kernel (3x3)", 320, 545, 28, INK, key="ft", anchor="mm")
     for r in range(3):
         for c in range(3):
             v = w[r, c] / m
@@ -291,7 +291,7 @@ def s_finder(pg, p, d):
 
 
 def s_many(pg, p, d):
-    pg.title("16 finders -> 16 new pictures", p)
+    pg.title("16 kernels -> 16 new pictures", p)
     m = d["maps"][0]
     n = int(16 * ease(p / 0.8))
     for i in range(n):
@@ -375,8 +375,8 @@ def s_data(pg, p, d):
 
 
 def s_learning(pg, p, d):
-    pg.title("8. Guess, check, nudge, repeat", p)
-    steps = [("guess", BLUE), ("check the answer", INK), ("nudge every number a tiny bit", RED)]
+    pg.title("8. Guess, check, tweak, repeat", p)
+    steps = [("guess", BLUE), ("check the answer", INK), ("tweak every weight a tiny bit", RED)]
     for i, (s, col) in enumerate(steps):
         if p > 0.05 + i * 0.1:
             pg.text(f"{i + 1}. {s}", 70, 170 + i * 55, 34, col, key=f"st{i}")
@@ -405,7 +405,7 @@ def s_learning(pg, p, d):
 def s_quiz(pg, p, d):
     pg.title("9. The quiz: a hand it never saw", p)
     pg.card(to_pil(d["new_person"]), 300, 360, 400, "np", angle=-3)
-    pg.text("Khabir's hand", 300, 520, 32, INK, key="kh", anchor="mm")
+    pg.text("Kabir's hand", 300, 520, 32, INK, key="kh", anchor="mm")
     if p > 0.15:
         k1 = ease((p - 0.15) / 0.3)
         pg.text("learned from 2 people", 640, 230, 32, INK, key="q1")
@@ -440,8 +440,6 @@ def s_safe(pg, p, d):
     pg.text("(example code)", 955, 395, 26, INK, key="ex", anchor="mm")
     if p > 0.8:
         pg.text("Vault 687: OPEN!", 955, 450, 46, GREEN, key="open", anchor="mm")
-    if p > 0.88:
-        pg.text("runs on the Arduino UNO Q: 71 ms per guess", 955, 520, 28, INK, key="uno", anchor="mm")
 
 
 def s_end(pg, p, d):
@@ -452,13 +450,13 @@ SCENES = [
     ("Title", 9, s_title),
     ("Camera picture", 8, s_camera),
     ("Shrink to 128 x 72", 10, s_shrink),
-    ("Every dot is 3 numbers", 13, s_numbers),
-    ("A pattern finder slides", 17, s_finder),
-    ("16 finders", 7, s_many),
+    ("Every pixel is 3 numbers", 13, s_numbers),
+    ("A kernel slides", 17, s_finder),
+    ("16 kernels", 7, s_many),
     ("Layers", 17, s_layers),
     ("The vote", 17, s_vote),
     ("Lots of examples", 15, s_data),
-    ("Guess, check, nudge", 19, s_learning),
+    ("Guess, check, tweak", 19, s_learning),
     ("The quiz", 14, s_quiz),
     ("Opening the safe", 14, s_safe),
     ("The end", 4, s_end),

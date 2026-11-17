@@ -7,26 +7,26 @@ used. The network learned to count fingers only from pictures we took.
 
 ## 1. A picture is just numbers
 
-The camera's picture is shrunk to **128 × 72 dots**. Each dot is three
-numbers from 0 to 255: how much red, green and blue it has. So the network
+The camera's picture (1920 × 1080 pixels) is shrunk to **128 × 72 pixels**.
+Each pixel is three numbers from 0 to 255: how much red, green and blue it has. So the network
 starts with 128 × 72 × 3 = **27,648 numbers**. It never "sees" a hand. It
 only does math on those numbers.
 
-## 2. Pattern finders
+## 2. Kernels
 
-The network's basic tool is a **pattern finder**: a tiny 3 × 3 grid of
-numbers. It slides across the picture one spot at a time. At each spot it
-multiplies the 3 × 3 dots under it by its own numbers and adds them up.
+The network's basic tool is a **kernel**, a pattern finder: a tiny 3 × 3
+grid of numbers. It slides across the picture one spot at a time. At each spot it
+multiplies the 3 × 3 pixels under it by its own numbers and adds them up.
 A big result means "my pattern is here", and a small or negative result
 means "not here". Negative results are set to zero.
 
 The output is a new picture, a **pattern map**, that is bright wherever the
-pattern was found. For example, one of the network's first pattern finders
+pattern was found. For example, one of the network's first kernels
 learned to light up **edges**, like the outline of each finger.
 
 ## 3. Layers: smaller pictures, more patterns
 
-The network stacks four layers of pattern finders. After each layer, the
+The network stacks four layers of kernels. After each layer, the
 maps are shrunk to half their size by keeping only the strongest value in
 every 2 × 2 square. Each new layer looks at the maps the previous layer made,
 so it can find bigger, more complicated patterns:
@@ -54,12 +54,12 @@ certainty.
 ## 5. How it learned
 
 All together the network has **294,903 numbers** (the values inside every
-pattern finder, plus the voting weights). They started out random. Learning
+kernel, plus the voting weights). They started out random. Learning
 means adjusting them:
 
 1. **Guess:** show the network a picture and get its answer.
 2. **Check:** compare the answer with the right one, and measure how wrong it was.
-3. **Nudge:** change every one of the 294,903 numbers a tiny bit in the
+3. **Tweak:** change every one of the 294,903 weights a tiny bit in the
    direction that would have made the answer less wrong. (The math for
    working out those directions is called *backpropagation*.)
 4. **Repeat** thousands of times.
@@ -85,7 +85,7 @@ and then quizzed it on that person. A high practice score doesn't prove
 much, because it could have memorized those pictures. A good score on a
 stranger's hand shows it really learned.
 
-- Learning from 2 people, it scored **80%** on Khabir's hand. It had learned
+- Learning from 2 people, it scored **80%** on Kabir's hand. It had learned
   a shortcut ("wide-open hand = 5") and called all of his 4s a 5.
 - Learning from 4 people, it scored **98.5%**. More variety broke the
   shortcut, so it actually had to count.
@@ -126,23 +126,23 @@ scenes with a little room to spare.
 > It starts with the camera. Every moment, it takes a picture of your hand
 > over the board.
 
-**0:17 – Shrink it to 128 × 72 dots**
-> First, we shrink the picture to just 128 by 72 dots. Zoom in, and you can
+**0:17 – Shrink it to 128 × 72 pixels**
+> First, we shrink the picture to just 128 by 72 pixels. Zoom in, and you can
 > see it's really made of tiny colored squares.
 
-**0:27 – Every dot is just 3 numbers**
-> And each square is just three numbers: how much red, green and blue it
+**0:27 – Every pixel is just 3 numbers**
+> And each pixel is just three numbers: how much red, green and blue it
 > has, from 0 to 255. To the computer, your hand is nothing but
 > twenty-seven thousand numbers.
 
-**0:40 – A pattern finder slides over the picture**
-> Now the network uses a pattern finder: a tiny three-by-three grid of
+**0:40 – A kernel slides over the picture**
+> Now the network uses a kernel: a tiny three-by-three grid of
 > numbers. It slides across the picture, and everywhere its pattern
 > matches, it lights up. This one learned, all by itself, to find edges,
 > like the outline of each finger.
 
-**0:57 – 16 finders, 16 new pictures**
-> The first layer has sixteen of these finders, so one picture becomes
+**0:57 – 16 kernels, 16 new pictures**
+> The first layer has sixteen of these kernels, so one picture becomes
 > sixteen pattern maps.
 
 **1:04 – Layers**
@@ -161,21 +161,20 @@ scenes with a little room to spare.
 > people. And every time it saw one, we shook it up: mirrored, tilted,
 > zoomed, darker or brighter, so it couldn't just memorize.
 
-**1:53 – Guess, check, nudge, repeat**
-> Learning is a loop. Guess. Check the answer. Then nudge every one of its
-> almost 300,000 numbers a tiny bit, so next time it's a little less wrong.
+**1:53 – Guess, check, tweak, repeat**
+> Learning is a loop. Guess. Check the answer. Then tweak every one of its
+> almost 300,000 weights a tiny bit, so next time it's a little less wrong.
 > After 25 rounds, about three minutes, it got almost every practice
 > picture right.
 
 **2:12 – The quiz: a hand it never saw**
 > The real test is a hand it has never seen. Learning from only two people,
-> it scored 80 percent on Khabir's hand. Learning from four people, 98.5
+> it scored 80 percent on Kabir's hand. Learning from four people, 98.5
 > percent. More people made it smarter.
 
 **2:26 – Opening the safe**
 > In the safe, you have to hold each number still for two seconds before it
-> counts. Get all three right and Vault 687 opens. And the whole thing runs
-> right on the Arduino UNO Q.
+> counts. Get all three right and Vault 687 opens.
 
 **2:40 – The end**
 > Thanks for watching!
