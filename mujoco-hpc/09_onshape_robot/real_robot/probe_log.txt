@@ -1,0 +1,36 @@
+Connecting to the Double Motor (card AZURE 1130)... turn it on if it is off.
+Connected.
+
+>>> TEST 1: put the robot flat on the table, the way it crawls, and do not touch it (3 s).
+updates: 148 in 3 s = 49 per second; gap between updates avg 16 ms, worst 61 ms
+still: yaw -54.4  pitch 8.0  roll -15.0
+still: accelerometer[x]    -16.0   gyroscope[x]      0.0
+still: accelerometer[y]    -25.0   gyroscope[y]      0.0
+still: accelerometer[z]    995.5   gyroscope[z]      0.0
+
+>>> TEST 2: turn BOTH arms by hand so they point straight FORWARD, flat (parallel to the table),
+    exactly like the CAD picture. Then let go.
+arm reference: left arm absolute angle 5.0  (position 6.0)
+arm reference: right arm absolute angle 359.0  (position -2.4)
+
+>>> TEST 3: hold the robot UP IN THE AIR so the arms spin freely (about 10 s).
+air: left arm clockwise  50% -> position changes  +520.1 per second (reported speed +40.1, power +3614.8)
+air: left arm clockwise 100% -> position changes +1028.3 per second (reported speed +88.2, power +5121.3)
+air: right arm clockwise  50% -> position changes  +511.9 per second (reported speed +43.0, power +2587.9)
+air: right arm clockwise 100% -> position changes +1038.1 per second (reported speed +88.4, power +4991.7)
+
+>>> TEST 4: put the robot flat on the table. After Enter, slowly turn it by hand a QUARTER TURN
+    to the LEFT (counter-clockwise seen from above), over about 2 seconds, then let go.
+turn: gyroscope[x] added up over time =       -0.5
+turn: gyroscope[y] added up over time =       -0.0
+turn: gyroscope[z] added up over time =      +82.1
+turn: yaw went from -368.0 to 462.0 (change +830.0)
+
+>>> TEST 5: put the robot on the floor facing FORWARD with some room in front. Both arms will spin
+    at half speed for 3 s using LEGO's own 'move forward'.
+ground: left arm position changed -1443 in 3 s
+ground: right arm position changed +1446 in 3 s
+ground: yaw changed -932.0
+ground: you saw 'f'
+
+Done. Results saved in /Users/sergio/Developer/GitHub/AI_Robotics/mujoco-hpc/09_onshape_robot/real_robot/probe_log.txt

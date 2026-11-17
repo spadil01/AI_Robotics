@@ -1,0 +1,58 @@
+<?xml version="1.0" ?>
+<!-- Generated using onshape-to-robot -->
+<!-- Onshape https://cad.onshape.com/documents/727105586bf0cb3a91b9f927/w/4b18bef71317ecd7a1375f61/e/8481b1cabaa03e23569d4fff -->
+<mujoco model="onshape">
+  <compiler angle="radian" meshdir="assets" autolimits="true"/>
+  <default>
+    <default class="onshape">
+      <joint frictionloss="0.1" armature="0.005"/>
+      <position kp="50" dampratio="1"/>
+      <default class="visual">
+        <geom type="mesh" contype="0" conaffinity="0" group="2"/>
+      </default>
+      <default class="collision">
+        <geom group="3"/>
+      </default>
+    </default>
+  </default>
+  <worldbody>
+    <!-- Link chassis -->
+    <body name="chassis" pos="0 0 0" quat="1 0 0 0" childclass="onshape">
+      <inertial pos="-0.0162731 0.00822702 0.0264225" mass="0.123727" fullinertia="7.63044e-05 3.32212e-05 9.0211e-05 0 0 1.717e-09"/>
+      <!-- Part chassis -->
+      <geom type="mesh" class="visual" pos="-0.0162731 0.00821932 0.0111219" quat="1 0 0 0" mesh="chassis" material="chassis_material"/>
+      <geom type="mesh" class="collision" pos="-0.0162731 0.00821932 0.0111219" quat="1 0 0 0" mesh="chassis" material="chassis_material"/>
+      <!-- Link right_arm -->
+      <body name="right_arm" pos="-0.0401831 -0.0162807 0.0246219" quat="0.5 0.5 -0.5 -0.5">
+        <!-- Joint from chassis to right_arm -->
+        <joint axis="0 0 1" name="right_wheel"/>
+        <inertial pos="0.0187851 -0.00101828 0.0107653" mass="0.0116132" fullinertia="6.4892e-07 5.306e-06 5.16775e-06 2.89721e-07 -9.03055e-07 5.7941e-08"/>
+        <!-- Part right_arm -->
+        <geom type="mesh" class="visual" pos="-0 0 0" quat="0.5 -0.5 -0.5 -0.5" mesh="right_arm" material="right_arm_material"/>
+        <geom type="mesh" class="collision" pos="-0 0 0" quat="0.5 -0.5 -0.5 -0.5" mesh="right_arm" material="right_arm_material"/>
+      </body>
+      <!-- Link left_arm -->
+      <body name="left_arm" pos="0.00763691 -0.0162807 0.0246219" quat="0.5 0.5 -0.5 -0.5">
+        <!-- Joint from chassis to left_arm -->
+        <joint axis="0 0 1" name="left_wheel"/>
+        <inertial pos="0.0187851 -0.00101828 -0.0107653" mass="0.0116132" fullinertia="6.4892e-07 5.306e-06 5.16775e-06 2.89721e-07 9.03055e-07 -5.7941e-08"/>
+        <!-- Part left_arm -->
+        <geom type="mesh" class="visual" pos="-0 0 0" quat="0.5 0.5 0.5 -0.5" mesh="left_arm" material="left_arm_material"/>
+        <geom type="mesh" class="collision" pos="-0 0 0" quat="0.5 0.5 0.5 -0.5" mesh="left_arm" material="left_arm_material"/>
+      </body>
+    </body>
+  </worldbody>
+  <asset>
+    <mesh file="chassis.stl"/>
+    <mesh file="left_arm.stl"/>
+    <mesh file="right_arm.stl"/>
+    <material name="chassis_material" rgba="0.615686 0.811765 0.929412 1"/>
+    <material name="right_arm_material" rgba="0.615686 0.811765 0.929412 1"/>
+    <material name="left_arm_material" rgba="0.615686 0.811765 0.929412 1"/>
+  </asset>
+  <actuator>
+    <position class="onshape" name="right_wheel" joint="right_wheel"/>
+    <position class="onshape" name="left_wheel" joint="left_wheel"/>
+  </actuator>
+  <equality/>
+</mujoco>

@@ -35,6 +35,16 @@ impenetrable_safe/safe_lock/mistakes.jpg
 impenetrable_safe/safe_lock/model.npz
 impenetrable_safe/**/.DS_Store
 
+!mujoco-hpc/
+!mujoco-hpc/**
+# MuJoCo crawler: keep the Python toolbox, cluster results and logs on the laptop only (big, and rebuilt by the scripts)
+mujoco-hpc/.venv/
+mujoco-hpc/runs/
+mujoco-hpc/logs/
+mujoco-hpc/results/
+# Onshape keys: never commit
+mujoco-hpc/**/.env
+
 # Re-ignore compiled bytecode caches everywhere, even inside the folders
 # whitelisted above -- machine/version-specific, never worth tracking.
 **/__pycache__/
